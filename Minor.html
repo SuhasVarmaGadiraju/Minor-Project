@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Search in Grid (Backtracking)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 40px;
+    }
+    .grid {
+      display: inline-grid;
+      grid-template-columns: repeat(5, 50px);
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .highlight {
+      background-color: yellow;
+      color: red;
+    }
+    input, button {
+      font-size: 16px;
+      padding: 8px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Word Search in Grid (Backtracking)</h2>
+
+<div class="grid" id="grid"></div>
+
+<input type="text" id="wordInput" placeholder="Enter word to search" />
+<button onclick="searchWord()">Search</button>
+
+<p id="result"></p>
+
+<script>
+  const matrix = [
+    ['C', 'A', 'T', 'F', 'O'],
+    ['B', 'G', 'E', 'E', 'S'],
+    ['I', 'T', 'A', 'T', 'A'],
+    ['S', 'E', 'R', 'T', 'H'],
+    ['O', 'M', 'A', 'T', 'O']
+  ];
+
+  const numRows = matrix.length;
+  const numCols = matrix[0].length;
+  const gridDiv = document.getElementById('grid');
+
+  function renderGrid(highlightPath = []) {
+    gridDiv.innerHTML = '';
+    for (let i = 0; i < numRows; i++) {
+      for (let j = 0; j < numCols; j++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = matrix[i][j];
+        if (highlightPath.some(([x, y]) => x === i && y === j)) {
+          cell.classList.add('highlight');
+        }
+        gridDiv.appendChild(cell);
+      }
+    }
+  }
+
+  renderGrid();
+
+  function exist(word) {
+    const visited = Array.from({ length: numRows }, () => Array(numCols).fill(false));
+
+    function backtrack(i, j, idx, path) {
+      if (idx === word.length) return true;
+      if (i < 0 || j < 0 || i >= numRows || j >= numCols || visited[i][j] || matrix[i][j] !== word[idx]) {
+        return false;
+      }
+
+      visited[i][j] = true;
+      path.push([i, j]);
+
+      const directions = [[0,1], [1,0], [0,-1], [-1,0]];
+      for (const [dx, dy] of directions) {
+        if (backtrack(i + dx, j + dy, idx + 1, path)) return true;
+      }
+
+      visited[i][j] = false;
+      path.pop();
+      return false;
+    }
+
+    for (let i = 0; i < numRows; i++) {
+      for (let j = 0; j < numCols; j++) {
+        const path = [];
+        if (backtrack(i, j, 0, path)) {
+          return path;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function searchWord() {
+    const word = document.getElementById('wordInput').value.trim().toUpperCase();
+    const result = document.getElementById('result');
+
+    if (!word) {
+      result.textContent = "Please enter a word.";
+      renderGrid();
+      return;
+    }
+
+    const path = exist(word);
+
+    if (path) {
+      result.textContent = `✅ Word "${word}" found!`;
+      renderGrid(path);
+    } else {
+      result.textContent = `❌ Word "${word}" not found.`;
+      renderGrid();
+    }
+  }
+</script>
+
+</body>
+</html>
